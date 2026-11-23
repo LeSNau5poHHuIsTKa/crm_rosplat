@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="ru"><head><meta charset="utf-8"><title>Платёжная CRM</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>
+:root{--bg:#0b1630;--card:#122349;--line:#223869;--tx:#e6ecff;--mut:#8fa2d1;--ac:#4f8cff;--ok:#2ecc8f;--bad:#ff5d73;--wr:#f5b942;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]){--bg:#eef2fb;--card:#fff;--line:#d5ddf0;--tx:#13204a;--mut:#5b6b94}}
+*{box-sizing:border-box}html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--tx);font:14px/1.45 system-ui,Segoe UI,Roboto,sans-serif}
+nav{display:flex;gap:4px;overflow-x:auto;padding:8px;background:var(--card);border-bottom:1px solid var(--line);position:sticky;top:env(safe-area-inset-top,0px);z-index:5}
+nav button{white-space:nowrap;background:none;border:0;color:var(--mut);padding:8px 12px;border-radius:8px;cursor:pointer;font:inherit}
+nav button.on{background:var(--ac);color:#fff}
+main{max-width:1100px;margin:auto;padding:14px}
+h2{margin:6px 0 12px}h3{margin:18px 0 8px;font-size:15px}
+.g{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.k{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px}
+.k small{color:var(--mut);display:block}.k b{font-size:17px}
+.p{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px;margin:10px 0}
+.f{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;align-items:end}
+label{display:block;color:var(--mut);font-size:12px}
+input,select,textarea{width:100%;background:var(--bg);color:var(--tx);border:1px solid var(--line);border-radius:7px;padding:7px;font:inherit}
+.b{background:var(--ac);color:#fff;border:0;border-radius:7px;padding:8px 12px;cursor:pointer;font:inherit}
+.b.s{background:var(--line);color:var(--tx)}.b.d{background:var(--bad)}.b.x{padding:3px 8px;font-size:12px}
+.t{overflow-x:auto}table{width:100%;border-collapse:collapse;min-width:640px}
+th,td{padding:7px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}th{color:var(--mut);font-weight:500}
+.ok{color:var(--ok)}.bad{color:var(--bad)}.wr{color:var(--wr)}
+.bar{height:8px;background:var(--line);border-radius:5px;overflow:hidden;min-width:80px}.bar i{display:block;height:100%;background:var(--ac)}
+.msg{color:var(--wr);margin:6px 0}
+.rp{max-width:460px;margin:0 auto;background:#0d0d0f;color:#eee;border-radius:22px;padding:14px;border:1px solid #222}
+.rp .hd{display:flex;align-items:center;justify-content:space-between;text-align:center;margin-bottom:12px}
+.rp .hd button{width:38px;height:38px;border-radius:50%;border:0;background:#25262a;color:#fff;font-size:18px;cursor:pointer}
+.rp .hd small{color:#888;display:block}
+.rp .bx{background:#161619;border:1px solid #26272b;border-radius:12px;padding:12px;margin-bottom:8px;color:#ddd}
+.rp .bx input,.rp .bx select{background:none;border:0;color:#fff;padding:0;width:auto;font:inherit;outline:0}
+.rp .big{font-size:34px;font-weight:700;margin:4px 0 12px;color:#fff}
+.rp .tabs{display:flex;background:#0d0d0f;border:1px solid #26272b;border-radius:12px;padding:4px;gap:4px;margin-bottom:10px}
+.rp .tabs button{flex:1;background:none;border:0;color:#aaa;padding:9px;border-radius:9px;cursor:pointer;font:inherit}
+.rp .tabs button.on{background:#2a2b30;color:#fff}
+.rp .tabs .ex{flex:0 0 44px}
+.bd{position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:flex-end;justify-content:center;z-index:20}
+.bd .rp{width:100%;max-height:90vh;overflow-y:auto;border-radius:22px 22px 0 0;margin:0;padding-bottom:calc(14px + env(safe-area-inset-bottom,0px))}
+@media (min-width:700px){.bd{align-items:center}.bd .rp{border-radius:22px}}
+.fw{position:fixed;z-index:20;width:min(460px,calc(100vw - 16px));max-height:calc(100vh - 16px);overflow-y:auto;border-radius:22px;box-shadow:0 14px 44px rgba(0,0,0,.55)}
+.fw .rp{margin:0;border-radius:22px;border-color:#333}
+.fw .dh{cursor:grab;touch-action:none;padding:2px 0 12px}.fw .hd{cursor:grab;touch-action:none}
+.rp .pe{display:flex;justify-content:space-between;gap:8px;padding:8px 0;border-top:1px solid #26272b;align-items:center;font-size:13px}
+.rp .pe button{background:#2ecc8f;color:#06150e;border:0;border-radius:8px;padding:5px 10px;cursor:pointer}
+</style></head><body>
+<nav id="nav"></nav><main id="m"></main><div id="ov"></div>
+<script>
+const V=[['inc','Доход'],['dash','Панель'],['cards','Карты'],['pays','Платежи'],['bal','Балансы'],['an','Аналитика'],['banks','Банки'],['log','История'],['set','Настройки']];
+let D={cards:[],pays:[],banks:[],log:[],set:{warn:80,fee:0,cur:'RUB'}},view='dash',ip='m',ic='',ifin=false,ov=false,editP=null,editC=null,flt={q:'',bank:'',card:'',a:'',b:''},per='7',pa='',pb='',msg='';
+try{const s=localStorage.getItem('crm1');if(s)D=Object.assign(D,JSON.parse(s))}catch(e){}
+const save=()=>{try{localStorage.setItem('crm1',JSON.stringify(D))}catch(e){}};
+const $=i=>document.getElementById(i);
+const r2=x=>Math.round((x+Number.EPSILON)*100)/100;
+const rub=x=>new Intl.NumberFormat('ru-RU',{style:'currency',currency:'RUB'}).format(x||0);
+const num=x=>new Intl.NumberFormat('ru-RU',{maximumFractionDigits:2}).format(x||0);
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const cls=x=>x>0?'ok':x<0?'bad':'';
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+const nowL=()=>{const d=new Date();d.setMinutes(d.getMinutes()-d.getTimezoneOffset());return d.toISOString().slice(0,16)};
+const dk=t=>t.slice(0,10), today=()=>nowL().slice(0,10);
+const addDays=(s,n)=>{const d=new Date(s+'T00:00:00Z');d.setUTCDate(d.getUTCDate()+n);return d.toISOString().slice(0,10)};
+function log(a,t){D.log.unshift({ts:nowL().replace('T',' '),a,t});D.log=D.log.slice(0,2000)}
+function calc(p){const buy=+p.buy,sell=+p.sell,rb=+p.rub;if(!(buy>0)||!(sell>0)||!(rb>0))return{usdt:0,sale:0,profit:0,pct:0};
+ const usdt=r2(rb/buy),sale=r2(usdt*sell),profit=r2(sale-rb-(+p.fee||0));return{usdt,sale,profit,pct:r2(profit/rb*100)}}
+const done=p=>p.status==='completed';
+const active=p=>p.status!=='cancelled';
+const cardName=id=>(D.cards.find(c=>c.id===id)||{name:'—'}).name;
+function used(c,from,to){return r2(D.pays.filter(p=>p.card===c.id&&active(p)&&(!from||dk(p.ts)>=from)&&(!to||dk(p.ts)<=to)).reduce((s,p)=>s+ +p.rub,0))}
+function cardStat(c){const t=today(),m=t.slice(0,7)+'-01',u=used(c),d=used(c,t,t),mo=used(c,m,t);
+ const pc=c.max>0?u/c.max*100:0,pd=c.day>0?d/c.day*100:0,pm=c.month>0?mo/c.month*100:0;
+ return{u,d,mo,left:r2(c.max-u),pc,pd,pm,worst:Math.max(pc,pd,pm)}}
+function agg(list){const dn=list.filter(done);let pr=0,ls=0,w=0,l=0,mx=null,mn=null;
+ dn.forEach(p=>{const x=calc(p).profit;if(x>=0){pr+=x;if(x>0)w++}else{ls+=x;l++}mx=mx===null?x:Math.max(mx,x);mn=mn===null?x:Math.min(mn,x)});
+ return{n:dn.length,pr:r2(pr),ls:r2(ls),net:r2(pr+ls),w,l,avg:dn.length?r2((pr+ls)/dn.length):0,mx,mn,inc:r2(dn.reduce((s,p)=>s+ +p.rub,0)),sale:r2(dn.reduce((s,p)=>s+calc(p).sale,0))}}
+const range=(a,b)=>D.pays.filter(p=>(!a||dk(p.ts)>=a)&&(!b||dk(p.ts)<=b));
+function bars(data){if(!data.length)return'<p class="msg">Нет данных</p>';const mx=Math.max(...data.map(d=>Math.abs(d.v)),1),W=Math.max(data.length*44,300),H=140,z=H/2;
+ let s=`<div class="t"><svg width="${W}" height="${H+30}" role="img">`;data.forEach((d,i)=>{const h=Math.abs(d.v)/mx*(z-6),x=i*44+6;
+ s+=`<rect x="${x}" y="${d.v>=0?z-h:z}" width="34" height="${Math.max(h,1)}" rx="3" fill="${d.v>=0?'var(--ok)':'var(--bad)'}"><title>${esc(d.l)}: ${rub(d.v)}</title></rect><text x="${x+17}" y="${H+14}" font-size="10" text-anchor="middle" fill="var(--mut)">${esc(d.l)}</text>`});
+ return s+`<line x1="0" x2="${W}" y1="${z}" y2="${z}" stroke="var(--line)"/></svg></div>`}
+function daysBars(a,b,fn){const out=[];for(let d=a;d<=b&&out.length<62;d=addDays(d,1))out.push({l:d.slice(5),v:fn(d)});return out}
+const dayProfit=d=>agg(range(d,d)).net, dayTurn=d=>agg(range(d,d)).inc;
+const stat=(l,v,c='')=>`<div class="k"><small>${l}</small><b class="${c}">${v}</b></div>`;
+function bankOpts(){return'<datalist id="bl">'+D.banks.map(b=>`<option value="${esc(b.name)}">${esc(b.bik||'')}</option>`).join('')+'</datalist>'}
+function ensureBank(n){n=(n||'').trim();if(n&&!D.banks.some(b=>b.name.toLowerCase()===n.toLowerCase())){D.banks.push({name:n,bik:'',status:'не подтверждён',manual:true})}}
+
+function dash(){const t=today(),w=addDays(t,-6),m=t.slice(0,7)+'-01',td=range(t,t),a=agg(td);
+ const cs=D.cards.filter(c=>c.status!=='off'),lim=cs.reduce((s,c)=>s+ +c.day,0),ud=cs.reduce((s,c)=>s+cardStat(c).d,0);
+ return`<h2>Панель</h2><div class="g">${stat('Поступления сегодня',rub(td.filter(active).reduce((s,p)=>s+ +p.rub,0)))}${stat('Продажи сегодня',rub(a.sale))}${stat('Прибыль сегодня',rub(a.pr),'ok')}${stat('Убытки сегодня',rub(a.ls),'bad')}${stat('Прибыль за неделю',rub(agg(range(w,t)).net),cls(agg(range(w,t)).net))}${stat('Прибыль за месяц',rub(agg(range(m,t)).net),cls(agg(range(m,t)).net))}${stat('Операций сегодня',td.filter(active).length)}${stat('Дневные лимиты',rub(lim))}${stat('Использовано сегодня',rub(ud))}${stat('Остаток на сегодня',rub(lim-ud))}</div>
+ <h3>Прибыль за 14 дней</h3><div class="p">${bars(daysBars(addDays(t,-13),t,dayProfit))}</div>
+ <h3>Оборот за 14 дней</h3><div class="p">${bars(daysBars(addDays(t,-13),t,dayTurn))}</div>
+ <h3>Лимиты по картам</h3><div class="p t">${cardsTbl(true)}</div>`}
+
+function cardsTbl(ro){if(!D.cards.length)return'<p class="msg">Карт пока нет</p>';
+ return`<table><tr><th>Карта</th><th>Банк</th><th>Владелец</th><th>Статус</th><th>Сегодня / дн. лимит</th><th>Месяц / мес. лимит</th><th>Всего / макс.</th><th>Остаток</th><th>Заполнение</th>${ro?'':'<th></th>'}</tr>`+D.cards.map(c=>{const s=cardStat(c),warn=s.worst>=D.set.warn;
+ return`<tr><td>${esc(c.name)}</td><td>${esc(c.bank)}</td><td>${esc(c.owner)}</td><td>${c.status==='off'?'отключена':'активна'}</td><td>${rub(s.d)} / ${rub(c.day)}</td><td>${rub(s.mo)} / ${rub(c.month)}</td><td>${rub(s.u)} / ${rub(c.max)}</td><td class="${s.left<0?'bad':''}">${rub(s.left)}</td><td><div class="bar"><i style="width:${Math.min(s.worst,100)}%;background:${s.worst>=100?'var(--bad)':warn?'var(--wr)':'var(--ac)'}"></i></div><small class="${warn?'wr':''}">${num(s.worst)}%${warn?' ⚠':''}</small></td>${ro?'':`<td><button class="b s x" onclick="ec('${c.id}')">Изм.</button> <button class="b s x" onclick="tc('${c.id}')">${c.status==='off'?'Вкл':'Откл'}</button> <button class="b s x" onclick="pc('${c.id}')">Платежи</button></td>`}</tr>`}).join('')+'</table>'}
+function cards(){const c=D.cards.find(x=>x.id===editC)||{};
+ return`<h2>Банковские карты</h2>${bankOpts()}<div class="p"><div class="f">
+ <div><label>Название</label><input id="cn" value="${esc(c.name)}"></div><div><label>Банк (справочник)</label><input id="cb" list="bl" value="${esc(c.bank)}"></div><div><label>Владелец</label><input id="co" value="${esc(c.owner)}"></div>
+ <div><label>Макс. лимит ₽</label><input id="cx" type="number" min="0" step="0.01" value="${c.max??''}"></div><div><label>Дневной ₽</label><input id="cd" type="number" min="0" step="0.01" value="${c.day??''}"></div><div><label>Месячный ₽</label><input id="cm" type="number" min="0" step="0.01" value="${c.month??''}"></div>
+ <div><label>Комментарий</label><input id="cc" value="${esc(c.comment)}"></div><div><button class="b" onclick="sc()">${editC?'Сохранить':'Добавить карту'}</button> ${editC?'<button class="b s" onclick="editC=null;go()">Отмена</button>':''}</div></div><div class="msg">${msg}</div>
+ <small style="color:var(--mut)">Номера карт, пароли и коды не вводите — достаточно названия.</small></div><div class="p t">${cardsTbl(false)}</div>`}
+function sc(){const n=$('cn').value.trim(),mx=+$('cx').value,dl=+$('cd').value,ml=+$('cm').value;
+ if(!n||!(mx>0)||!(dl>0)||!(ml>0)){msg='Заполните название и положительные лимиты';return go()}
+ if(dl>ml||ml>mx){msg='Должно быть: дневной ≤ месячный ≤ максимальный';return go()}
+ msg='';const o={name:n,bank:$('cb').value.trim(),owner:$('co').value.trim(),max:mx,day:dl,month:ml,comment:$('cc').value.trim()};ensureBank(o.bank);
+ if(editC){const c=D.cards.find(x=>x.id===editC);log('Карта изменена',`${c.name}: лимиты ${c.max}/${c.month}/${c.day} → ${mx}/${ml}/${dl}`);Object.assign(c,o);editC=null}
+ else{D.cards.push({id:uid(),status:'on',...o});log('Карта добавлена',n)}save();go()}
+const ec=id=>{editC=id;go()};
+function tc(id){const c=D.cards.find(x=>x.id===id);c.status=c.status==='off'?'on':'off';log('Статус карты',`${c.name}: ${c.status==='off'?'отключена':'включена'}`);save();go()}
+function pc(id){flt={q:'',bank:'',card:id,a:'',b:''};view='pays';go()}
+
+function pays(){const p=D.pays.find(x=>x.id===editP)||{ts:nowL(),status:'completed',fee:'',buy:'',sell:''};const fd=D.pays.filter(x=>{
+ if(flt.card&&x.card!==flt.card)return false;if(flt.bank&&x.from!==flt.bank&&x.to!==flt.bank)return false;if(flt.a&&dk(x.ts)<flt.a)return false;if(flt.b&&dk(x.ts)>flt.b)return false;
+ if(flt.q&&!String(x.rub).includes(flt.q)&&!(x.txid||'').includes(flt.q))return false;return true}).sort((a,b)=>b.ts.localeCompare(a.ts));
+ const cardSel=(v)=>D.cards.map(c=>`<option value="${c.id}" ${v===c.id?'selected':''}>${esc(c.name)}</option>`).join('');
+ return`<h2>Входящие платежи</h2>${bankOpts()}<div class="p"><div class="f">
+ <div><label>Дата и время</label><input id="pt" type="datetime-local" value="${p.ts}"></div><div><label>Сумма, ₽</label><input id="pr" type="number" min="0" step="0.01" value="${p.rub??''}" oninput="pv()"></div>
+ <div><label>Банк отправителя</label><input id="pf" list="bl" value="${esc(p.from)}"></div><div><label>Банк получателя</label><input id="pto" list="bl" value="${esc(p.to)}"></div>
+ <div><label>Карта получателя</label><select id="pcd"><option value="">—</option>${cardSel(p.card)}</select></div>
+ <div><label>Курс покупки USDT</label><input id="pb" type="number" min="0" step="0.0001" value="${p.buy}" oninput="pv()"></div><div><label>Курс продажи USDT</label><input id="ps" type="number" min="0" step="0.0001" value="${p.sell}" oninput="pv()"></div>
+ <div><label>Комиссия, ₽ (пусто = ${D.set.fee}% по настройкам)</label><input id="pe" type="number" min="0" step="0.01" value="${p.fee}" oninput="pv()"></div>
+ <div><label>ID транзакции</label><input id="px" value="${esc(p.txid)}"></div><div><label>Статус</label><select id="pst">${[['completed','Завершена'],['pending','В процессе'],['cancelled','Отменена']].map(s=>`<option value="${s[0]}" ${p.status===s[0]?'selected':''}>${s[1]}</option>`).join('')}</select></div>
+ <div><label>Комментарий</label><input id="pm" value="${esc(p.comment)}"></div></div>
+ <p id="pv" style="margin:8px 0"></p><div class="msg">${msg}</div><button class="b" onclick="sp()">${editP?'Сохранить':'Добавить'}</button> ${editP?'<button class="b s" onclick="editP=null;go()">Отмена</button>':''}</div>
+ <div class="p"><div class="f"><div><label>Поиск по сумме / ID</label><input value="${esc(flt.q)}" onchange="flt.q=this.value;go()"></div><div><label>Банк</label><input list="bl" value="${esc(flt.bank)}" onchange="flt.bank=this.value;go()"></div>
+ <div><label>Карта</label><select onchange="flt.card=this.value;go()"><option value="">Все</option>${cardSel(flt.card)}</select></div><div><label>С</label><input type="date" value="${flt.a}" onchange="flt.a=this.value;go()"></div><div><label>По</label><input type="date" value="${flt.b}" onchange="flt.b=this.value;go()"></div>
+ <div><button class="b s" onclick="flt={q:'',bank:'',card:'',a:'',b:''};go()">Сбросить</button> <button class="b s" onclick="expCsv()">CSV</button></div></div></div>
+ <div class="p t"><table><tr><th>Дата</th><th>₽</th><th>Отправитель</th><th>Получатель</th><th>Карта</th><th>Покупка</th><th>Продажа</th><th>USDT</th><th>Комиссия</th><th class="s" style="cursor:pointer" onclick="srt=!srt;go()">Результат ⇅</th><th>Статус</th><th></th></tr>
+ ${(srt?[...fd].sort((a,b)=>calc(b).profit-calc(a).profit):fd).map(x=>{const c=calc(x);return`<tr><td>${x.ts.replace('T',' ')}</td><td>${rub(x.rub)}</td><td>${esc(x.from)}</td><td>${esc(x.to)}</td><td>${esc(cardName(x.card))}</td><td>${x.buy}</td><td>${x.sell}</td><td>${num(c.usdt)}</td><td>${rub(x.fee)}</td><td class="${cls(c.profit)}">${rub(c.profit)} (${num(c.pct)}%)${c.profit<0?' убыток':''}</td><td>${{completed:'завершена',pending:'в процессе',cancelled:'отменена'}[x.status]}</td><td title="${esc(x.comment)}"><button class="b s x" onclick="editP='${x.id}';go()">Изм.</button> <button class="b d x" onclick="dp('${x.id}')">Уд.</button></td></tr>`}).join('')||'<tr><td colspan="12">Нет операций</td></tr>'}</table></div>`}
+let srt=false;
+function pv(){const o={rub:$('pr').value,buy:$('pb').value,sell:$('ps').value,fee:$('pe').value===''?r2($('pr').value*D.set.fee/100):$('pe').value},c=calc(o);
+ $('pv').innerHTML=c.usdt?`Получено USDT: <b>${num(c.usdt)}</b> · Сумма продажи: <b>${rub(c.sale)}</b> · <b class="${cls(c.profit)}">${c.profit<0?'Убыток':'Прибыль'}: ${rub(c.profit)} (${num(c.pct)}%)</b>`:''}
+function sp(){const o={ts:$('pt').value,rub:+$('pr').value,from:$('pf').value.trim(),to:$('pto').value.trim(),card:$('pcd').value,buy:+$('pb').value,sell:+$('ps').value,txid:$('px').value.trim(),status:$('pst').value,comment:$('pm').value.trim()};
+ o.fee=$('pe').value===''?r2(o.rub*D.set.fee/100):+$('pe').value;
+ if(!o.ts||!(o.rub>0)||!(o.buy>0)||!(o.sell>0)||o.fee<0){msg='Укажите дату, сумму и оба курса (больше 0)';return go()}
+ if(o.txid&&D.pays.some(x=>x.txid===o.txid&&x.id!==editP)){msg='Дубль: операция с таким ID транзакции уже есть';return go()}
+ if(!o.txid&&D.pays.some(x=>x.id!==editP&&x.rub===o.rub&&x.card===o.card&&Math.abs(new Date(x.ts)-new Date(o.ts))<60000)&&!confirm('Похожая операция (сумма, карта, минута) уже есть. Добавить всё равно?'))return;
+ msg='';ensureBank(o.from);ensureBank(o.to);
+ if(editP){const x=D.pays.find(z=>z.id===editP);log('Платёж изменён',`${rub(x.rub)} → ${rub(o.rub)}, статус ${x.status} → ${o.status}`);Object.assign(x,o);editP=null}
+ else{D.pays.push({id:uid(),...o});log('Платёж добавлен',`${rub(o.rub)}, ${o.status}`)}save();go()}
+function dp(id){const x=D.pays.find(z=>z.id===id);if(!confirm('Удалить операцию?'))return;D.pays=D.pays.filter(z=>z.id!==id);log('Платёж удалён',`${x.ts.replace('T',' ')} ${rub(x.rub)} ${x.txid||''}`);save();go()}
+function dl(name,txt,type){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([txt],{type}));a.download=name;a.click()}
+function expCsv(){const rows=[['Дата','Сумма','Отправитель','Получатель','Карта','Покупка','Продажа','USDT','Комиссия','Результат','Статус','ID','Комментарий']];
+ D.pays.forEach(x=>{const c=calc(x);rows.push([x.ts,x.rub,x.from,x.to,cardName(x.card),x.buy,x.sell,c.usdt,x.fee,c.profit,x.status,x.txid,x.comment])});
+ dl('payments.csv','\ufeff'+rows.map(r=>r.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(';')).join('\n'),'text/csv')}
+
+function bal(){const act=D.pays.filter(active),dn=D.pays.filter(done),pe=D.pays.filter(p=>p.status==='pending');
+ const byB={};act.forEach(p=>{const k=p.to||'—';byB[k]=(byB[k]||0)+ +p.rub});
+ return`<h2>Балансы</h2><div class="g">${stat('Сумма поступлений',rub(act.reduce((s,p)=>s+ +p.rub,0)))}${stat('Завершённые продажи',rub(agg(D.pays).sale))}${stat('Общий оборот',rub(dn.reduce((s,p)=>s+ +p.rub,0)+agg(D.pays).sale))}${stat('Незавершённые',`${pe.length} · ${rub(pe.reduce((s,p)=>s+ +p.rub,0))}`,'wr')}</div>
+ <h3>По картам</h3><div class="p t"><table><tr><th>Карта</th><th>Поступило</th><th>Из них завершено</th><th>В процессе</th></tr>${D.cards.map(c=>{const l=D.pays.filter(p=>p.card===c.id);return`<tr><td>${esc(c.name)}</td><td>${rub(l.filter(active).reduce((s,p)=>s+ +p.rub,0))}</td><td>${rub(l.filter(done).reduce((s,p)=>s+ +p.rub,0))}</td><td>${rub(l.filter(p=>p.status==='pending').reduce((s,p)=>s+ +p.rub,0))}</td></tr>`}).join('')||'<tr><td>Нет карт</td></tr>'}</table></div>
+ <h3>По банкам получателя</h3><div class="p t"><table><tr><th>Банк</th><th>Сумма</th></tr>${Object.entries(byB).map(([k,v])=>`<tr><td>${esc(k)}</td><td>${rub(r2(v))}</td></tr>`).join('')||'<tr><td>Нет данных</td></tr>'}</table></div>`}
+
+function perRange(){const t=today();if(per==='0')return[t,t];if(per==='y'){const y=addDays(t,-1);return[y,y]}if(per==='7')return[addDays(t,-6),t];if(per==='30')return[addDays(t,-29),t];if(per==='m')return[t.slice(0,7)+'-01',t];return[pa||'2000-01-01',pb||t]}
+function an(){const[a,b]=perRange(),s=agg(range(a,b));
+ return`<h2>Прибыль и аналитика</h2><div class="p"><div class="f"><div><label>Период</label><select onchange="per=this.value;go()">${[['0','Сегодня'],['y','Вчера'],['7','Последние 7 дней'],['30','Последние 30 дней'],['m','Текущий месяц'],['c','Произвольный']].map(o=>`<option value="${o[0]}" ${per===o[0]?'selected':''}>${o[1]}</option>`).join('')}</select></div>
+ ${per==='c'?`<div><label>С</label><input type="date" value="${pa}" onchange="pa=this.value;go()"></div><div><label>По</label><input type="date" value="${pb}" onchange="pb=this.value;go()"></div>`:''}</div></div>
+ <p style="color:var(--mut)">Учитываются только завершённые операции.</p>
+ <div class="g">${stat('Общая прибыль',rub(s.pr),'ok')}${stat('Чистая прибыль',rub(s.net),cls(s.net))}${stat('Общий убыток',rub(s.ls),'bad')}${stat('Прибыльных',s.w)}${stat('Убыточных',s.l)}${stat('Средняя с операции',rub(s.avg))}${stat('Макс. прибыль',s.mx===null?'—':rub(s.mx))}${stat('Макс. убыток',s.mn===null||s.mn>=0?'—':rub(s.mn))}${stat('Сумма поступлений',rub(s.inc))}${stat('Сумма продаж',rub(s.sale))}</div>
+ <h3>Прибыль по дням</h3><div class="p">${bars(daysBars(a,b,dayProfit))}</div><h3>Оборот по дням</h3><div class="p">${bars(daysBars(a,b,dayTurn))}</div>`}
+
+function banks(){const m={};D.pays.filter(active).forEach(p=>{const k=p.from||'—';(m[k]=m[k]||[]).push(p)});
+ const q=(window.bq||'').toLowerCase(),list=D.banks.filter(b=>!q||b.name.toLowerCase().includes(q)||(b.bik||'').includes(q));
+ return`<h2>Банки</h2><div class="p t"><table><tr><th>Банк отправителя</th><th>Поступлений</th><th>Сумма</th><th>Средний перевод</th></tr>${Object.entries(m).map(([k,l])=>{const s=l.reduce((a,p)=>a+ +p.rub,0);return`<tr><td>${esc(k)}</td><td>${l.length}</td><td>${rub(r2(s))}</td><td>${rub(r2(s/l.length))}</td></tr>`}).join('')||'<tr><td>Нет данных</td></tr>'}</table></div>
+ <h3>Справочник банков (${D.banks.length})</h3><div class="p"><p style="color:var(--mut)">Официальный список: <a style="color:var(--ac)" href="https://www.cbr.ru/banking_sector/credit/" target="_blank" rel="noopener">cbr.ru/banking_sector/credit</a>. Страница не может скачать его сама (ограничения хостинга) — выгрузите список с сайта ЦБ и вставьте ниже строками «Название;БИК;Статус». Загрузка обновляет существующие банки, прежние не удаляются.</p>
+ <textarea id="bi" rows="4" placeholder="ПАО Сбербанк;044525225;действует"></textarea><p><button class="b" onclick="ib()">Загрузить / обновить</button></p>
+ <label>Поиск</label><input value="${esc(window.bq||'')}" onchange="bq=this.value;go()"><div class="t"><table><tr><th>Название</th><th>БИК</th><th>Статус</th></tr>${list.slice(0,200).map(b=>`<tr><td>${esc(b.name)}</td><td>${esc(b.bik)}</td><td>${esc(b.status)}${b.manual?' (вручную)':''}</td></tr>`).join('')||'<tr><td>Пусто</td></tr>'}</table></div></div>`}
+function ib(){let n=0;$('bi').value.split('\n').forEach(l=>{const[a,b,c]=l.split(/[;\t]/).map(s=>s.trim());if(!a)return;const e=D.banks.find(x=>x.name.toLowerCase()===a.toLowerCase());
+ if(e){e.bik=b||e.bik;e.status=c||'действует';e.manual=false}else D.banks.push({name:a,bik:b||'',status:c||'действует'});n++});log('Справочник банков',`обработано строк: ${n}`);save();go()}
+
+function logv(){return`<h2>История операций</h2><div class="p t"><table><tr><th>Время</th><th>Действие</th><th>Подробности</th></tr>${D.log.map(l=>`<tr><td>${l.ts}</td><td>${esc(l.a)}</td><td>${esc(l.t)}</td></tr>`).join('')||'<tr><td>Пусто</td></tr>'}</table></div>`}
+function set(){return`<h2>Настройки</h2><div class="p"><div class="f"><div><label>Основная валюта</label><input value="RUB (₽)" disabled></div><div><label>Предупреждение о лимите, %</label><input id="sw" type="number" min="1" max="100" value="${D.set.warn}"></div><div><label>Комиссия по умолчанию, % от суммы</label><input id="sf" type="number" min="0" step="0.01" value="${D.set.fee}"></div><div><button class="b" onclick="ss()">Сохранить</button></div></div></div>
+ <div class="p"><b>Резервная копия</b><p><button class="b" onclick="dl('crm-backup.json',JSON.stringify(D),'application/json')">Скачать JSON</button> <button class="b s" onclick="$('bf').click()">Восстановить</button><input id="bf" type="file" accept=".json" hidden onchange="rb(this.files[0])"> <button class="b d" onclick="if(confirm('Стереть все данные?')){D={cards:[],pays:[],banks:[],log:[],set:D.set};save();go()}">Очистить всё</button></p>
+ <small style="color:var(--mut)">Данные хранятся в браузере этого устройства — делайте копии регулярно.</small></div>`}
+function ss(){D.set.warn=Math.min(100,Math.max(1,+$('sw').value||80));D.set.fee=Math.max(0,+$('sf').value||0);log('Настройки','лимит-предупреждение '+D.set.warn+'%, комиссия '+D.set.fee+'%');save();go()}
+function rb(f){if(!f)return;const r=new FileReader();r.onload=()=>{try{const x=JSON.parse(r.result);if(!x.cards||!x.pays)throw 0;D=x;save();go()}catch(e){alert('Неверный файл')}};r.readAsText(f)}
+
+function sm(p){let d=`M${p[0][0]},${p[0][1]}`;for(let i=0;i<p.length-1;i++){const a=p[i-1]||p[i],b=p[i],c=p[i+1],e=p[i+2]||c;d+=`C${b[0]+(c[0]-a[0])/6},${b[1]+(c[1]-a[1])/6} ${c[0]-(e[0]-b[0])/6},${c[1]-(e[1]-b[1])/6} ${c[0]},${c[1]}`}return d}
+const kf=v=>Math.abs(v)>=1000?Math.round(v/1000)+'K':String(Math.round(v));
+function inc(){const t=today(),L=D.pays.filter(p=>done(p)&&(!ic||p.card===ic)),sum=l=>r2(l.reduce((s,p)=>s+calc(p).profit,0));let pts=[],lab=[];
+ if(ip==='d'){for(let h=0;h<24;h++){pts.push(sum(L.filter(p=>dk(p.ts)===t&&+p.ts.slice(11,13)===h)));lab.push(String(h).padStart(2,'0')+':00')}}
+ else{const n=ip==='w'?7:30;for(let i=n-1;i>=0;i--){const d=addDays(t,-i);pts.push(sum(L.filter(p=>dk(p.ts)===d)));lab.push(d.slice(8)+'.'+d.slice(5,7))}}
+ const tot=r2(pts.reduce((a,b)=>a+b,0)),hi=Math.max(...pts,1),lo=Math.min(...pts,0),W=400,H=190,L0=38,B=22,T=8,iw=W-L0-6,ih=H-B-T,X=i=>L0+i*iw/(pts.length-1||1),Y=v=>T+ih-(v-lo)/(hi-lo)*ih,xy=pts.map((v,i)=>[X(i),Y(v)]),st=Math.ceil(pts.length/6);
+ let sv=`<svg viewBox="0 0 ${W} ${H}" style="width:100%">`;for(let k=0;k<4;k++){const v=lo+(hi-lo)*k/3,y=Y(v);sv+=`<line x1="${L0}" x2="${W}" y1="${y}" y2="${y}" stroke="#26272b"/><text x="0" y="${y+4}" font-size="11" fill="#777">${kf(v)}</text>`}
+ lab.forEach((l,i)=>{if(i%st===0)sv+=`<text x="${X(i)}" y="${H-5}" font-size="10" fill="#777" text-anchor="middle">${l}</text>`});
+ sv+=`<path d="${sm(xy)}" fill="none" stroke="#2ecc8f" stroke-width="3" stroke-linecap="round"/></svg>`;
+ const pe=D.pays.filter(p=>p.status==='pending'&&(!ic||p.card===ic)),tb=(k,n)=>`<button class="${ip===k?'on':''}" onclick="ip='${k}';go()">${n}</button>`;
+ return`<div class="rp"><div class="dh"><div style="width:44px;height:4px;background:#555;border-radius:3px;margin:0 auto"></div></div><div class="hd"><button onclick="closeInc()">✕</button><div><b>Мой трекер</b><small>учёт поступлений</small></div><button onclick="ov=false;view='set';go();focus()">⋯</button></div>
+ <div class="bx">Курс USDT: <input inputmode="decimal" style="width:${Math.max(String(D.set.rate||'0').length,2)+1}ch" value="${D.set.rate||''}" placeholder="0" onchange="D.set.rate=+this.value.replace(',','.')||0;save();go()">₽</div>
+ <div class="bx">💬 <select onchange="ic=this.value;go()"><option value="">Рабочий чат</option>${D.cards.map(c=>`<option value="${c.id}" ${ic===c.id?'selected':''}>${esc(c.name)}</option>`).join('')}</select></div>
+ <div class="bx"><div style="color:#bbb">Ваш доход</div><div class="big">${new Intl.NumberFormat('ru-RU',{maximumFractionDigits:0}).format(tot)} ₽</div>
+ <div class="tabs">${tb('d','день')}${tb('w','неделя')}${tb('m','месяц')}<button class="ex" title="Экспорт CSV" onclick="expCsv()">⭳</button></div>${sv}</div>
+ <div class="bx"><div style="display:flex;justify-content:space-between;cursor:pointer" onclick="ifin=!ifin;go()"><span>⏱ Финализация сделок</span><span>${pe.length} · ${rub(pe.reduce((s,p)=>s+ +p.rub,0))} ${ifin?'▴':'▾'}</span></div>
+ ${ifin?(pe.map(p=>`<div class="pe"><span>${esc(p.from||'—')} · ${rub(p.rub)}<br><small style="color:#888">${p.ts.replace('T',' ')}</small></span><button onclick="fin('${p.id}')">Завершить</button></div>`).join('')||'<div class="pe">Нет незавершённых</div>'):''}</div>
+ <div style="text-align:right"><button class="b" style="border-radius:50%;width:48px;height:48px" title="Добавить платёж" onclick="ov=false;view='pays';go();focus()">+</button></div></div>`}
+function fin(id){const p=D.pays.find(x=>x.id===id);p.status='completed';log('Сделка завершена',rub(p.rub));save();go()}
+const R={inc,dash,cards,pays,bal,an,banks,log:logv,set};
+function go(){$('nav').innerHTML=V.map(v=>`<button class="${v[0]===view?'on':''}" onclick="${v[0]==='inc'?'openPop()':`view='${v[0]}';msg='';go()`}">${v[1]}</button>`).join('');
+ const sy=scrollY;$('m').innerHTML=R[view]();$('ov').innerHTML=ov?`<div class="fw" id="fw" style="left:${wx}px;top:${wy}px">${inc()}</div>`:'';document.body.style.overflow='';if(view==='pays')pv();scrollTo(0,sy);refreshPop()}
+let pop=null;
+function popRun(c,el){try{new Function(c).call(el)}catch(e){console.error(e)}}
+function tr(h){return h.replace(/onclick="([^"]*)"/g,'data-c="$1"').replace(/onchange="([^"]*)"/g,'data-h="$1"')}
+function refreshPop(){if(!pop)return;if(pop.closed){pop=null;return}const r=pop.document.getElementById('r');if(!r)return;const y=pop.scrollY;r.innerHTML=tr(inc());pop.scrollTo(0,y)}
+function closeInc(){ov=false;if(pop&&!pop.closed)pop.close();pop=null;go()}
+function openPop(){if(pop&&!pop.closed){pop.focus();return}
+ pop=window.open('','crmincome','popup=yes,width=480,height=780,left=40,top=40');
+ if(!pop){ov=true;go();return}
+ pop.document.write('<!DOCTYPE html><html lang="ru"><head><meta charset="utf-8"><title>Доход</title><meta name="viewport" content="width=device-width,initial-scale=1"><style>'+document.querySelector('style').textContent+'body{background:#0d0d0f;padding:10px}</style></head><body><div id="r"></div></body></html>');
+ pop.document.close();
+ pop.document.addEventListener('click',e=>{const t=e.target.closest('[data-c]');if(t)popRun(t.dataset.c,t)});
+ pop.document.addEventListener('change',e=>{const t=e.target.closest('[data-h]');if(t)popRun(t.dataset.h,t)});
+ refreshPop()}
+setInterval(()=>{if(!pop)return;if(pop.closed){pop=null;return}const a=pop.document.activeElement;if(!a||a.tagName!=='INPUT')refreshPop()},3000);
+let wx=Math.max(8,(innerWidth-Math.min(460,innerWidth-16))/2),wy=70,drag=null;
+document.addEventListener('pointerdown',e=>{if(!e.target.closest('#fw')||!e.target.closest('.dh,.hd')||e.target.closest('button'))return;drag={dx:e.clientX-wx,dy:e.clientY-wy};e.preventDefault()});
+addEventListener('pointermove',e=>{const w=$('fw');if(!drag||!w)return;wx=Math.min(Math.max(0,e.clientX-drag.dx),innerWidth-60);wy=Math.min(Math.max(0,e.clientY-drag.dy),innerHeight-40);w.style.left=wx+'px';w.style.top=wy+'px'});
+addEventListener('pointerup',()=>{drag=null});
+go();
+</script></body></html>
